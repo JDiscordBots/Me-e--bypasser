@@ -34,6 +34,30 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+			<plugin><!-- assembly (JAR) -->
+		      	<artifactId>maven-assembly-plugin</artifactId>
+				  <configuration>
+				    <archive>
+				      <manifest>
+				        <mainClass>io.github.danthe1st.mee.bypasser.MeeBypasser</mainClass>
+				      </manifest>
+				    </archive>
+				    <finalName>Mee-bypasser</finalName>
+				    <descriptorRefs>
+				    	<descriptorRef>jar-with-dependencies</descriptorRef>
+				    </descriptorRefs>
+				    <appendAssemblyId>false</appendAssemblyId>
+				  </configuration>
+				  <executions>
+				    <execution>
+				      <id>make-assembly</id>
+				      <phase>package</phase>
+				      <goals>
+				        <goal>single</goal>
+				      </goals>
+				    </execution>
+				  </executions>
+			</plugin> 
 		</plugins>
 	</build>
 </project>
