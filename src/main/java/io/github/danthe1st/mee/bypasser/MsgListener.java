@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.json.JSONException;
 
@@ -138,6 +139,15 @@ public class MsgListener extends ListenerAdapter{
 						return;
 					}
 					event.getChannel().sendMessage("Roles of name "+args[0]+": "+event.getGuild().getRolesByName(args[0], true)).queue();
+					break;
+				}
+				case "list":{
+					Map<Integer, String> gRoles = roles.get(event.getGuild().getId());
+					if(gRoles==null) {
+						event.getChannel().sendMessage("Mee-bypasser is not set up for this guild").queue();
+					}else {
+						event.getChannel().sendMessage(gRoles.entrySet().stream().map(entry->"Level: "+entry.getKey()+", Role: "+event.getJDA().getRoleById(entry.getValue()).getAsMention()).collect(Collectors.joining("\n"))).queue();
+					}
 					break;
 				}
 				default:{
