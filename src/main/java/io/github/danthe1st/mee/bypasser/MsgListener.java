@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.json.JSONException;
 
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -33,7 +34,9 @@ public class MsgListener extends ListenerAdapter{
 	}
 	
 	private Map<String, Map<Integer,String>> roles=new HashMap<>();
-	
+	private boolean hasModPerm(Member member) {
+		return member.hasPermission(Permission.MANAGE_ROLES);
+	}
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
 		if(event.getMessage().getContentRaw().startsWith("!rank")) {
@@ -57,7 +60,9 @@ public class MsgListener extends ListenerAdapter{
 				e.printStackTrace();
 			}
 		}else if(event.getMessage().getContentRaw().startsWith("mb!")) {
-			
+			if(!hasModPerm(event.getMember())) {
+				return;
+			}
 			String[] split=event.getMessage().getContentRaw().split(" ");
 			String[] args=Arrays.copyOfRange(split, 1, split.length);
 			String command=split[0].substring("mb!".length()).toLowerCase();
