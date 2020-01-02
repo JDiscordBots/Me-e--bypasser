@@ -143,7 +143,8 @@ public class MsgListener extends ListenerAdapter{
 						event.getChannel().sendMessage("missing args").queue();
 						return;
 					}
-					event.getChannel().sendMessage("Roles of name "+args[0]+": "+event.getGuild().getRolesByName(args[0], true)).queue();
+					String name=String.join(" ",args);
+					event.getChannel().sendMessage("Roles of name "+name+": "+event.getGuild().getRolesByName(name, true)).queue();
 					break;
 				}
 				case "list":{
