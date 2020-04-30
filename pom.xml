@@ -16,12 +16,17 @@
 		<dependency>
 			<groupId>net.dv8tion</groupId>
 			<artifactId>JDA</artifactId>
-			<version>4.0.0_42</version>
+			<version>4.1.1_140</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20190722</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.jdiscordbots</groupId>
+			<artifactId>nightdream-logging</artifactId>
+			<version>1.1.9</version>
 		</dependency>
 	</dependencies>
 	<build>
