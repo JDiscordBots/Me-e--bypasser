@@ -1,4 +1,4 @@
-package io.github.danthe1st.mee.bypasser;
+package io.github.jdiscordbots.mee.bypasser;
 
 import java.io.BufferedReader;
 import java.io.File;
