@@ -2,7 +2,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.github.danthe1st</groupId>
+	<groupId>io.github.jdiscordbots</groupId>
 	<artifactId>mee-bypasser</artifactId>
 	<version>1.0.0</version>
 	<repositories>
@@ -44,7 +44,7 @@
 				  <configuration>
 				    <archive>
 				      <manifest>
-				        <mainClass>io.github.danthe1st.mee.bypasser.MeeBypasser</mainClass>
+				        <mainClass>io.github.jdiscordbots.mee.bypasser.MeeBypasser</mainClass>
 				      </manifest>
 				    </archive>
 				    <finalName>Mee-bypasser</finalName>
