@@ -12,6 +12,12 @@
 			<url>https://jcenter.bintray.com</url>
 		</repository>
 	</repositories>
+	<licenses>
+	  	<license>
+	      <name>GNU GPL Version 3.0</name>
+	      <url>http://www.gnu.org/licenses/gpl.html</url>
+	    </license>
+  	</licenses>
 	<dependencies>
 		<dependency>
 			<groupId>net.dv8tion</groupId>
@@ -63,6 +69,19 @@
 				    </execution>
 				  </executions>
 			</plugin> 
+			<plugin>
+			   <groupId>org.jasig.maven</groupId>
+			   <artifactId>maven-notice-plugin</artifactId>
+			   <version>1.0.6</version>
+			   <configuration>
+			      <noticeTemplate>https://jdiscordbots.github.io/util/data/notice/Mee-bypasser.template</noticeTemplate>
+			      <licenseMapping>
+			         <param>https://jdiscordbots.github.io/util/data/notice/license-mappings.xml</param>
+			      </licenseMapping>
+			      <generateChildNotices>true</generateChildNotices>
+			      <fileName>NOTICE.md</fileName>
+			   </configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
