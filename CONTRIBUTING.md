@@ -8,7 +8,7 @@ If it is a security vulnerability, please don't create an issue on github but su
 If you think of a good improvement, create a new Issue using the *feature_request* template.
 If you have Questions about this Project, create a new Issue using the *question* template.
 
-You can also report a Bug, suggest a feature or ask a question on the [this Server](https://discord.gg/sxnn5s)
+You can also report a Bug, suggest a feature or ask a question by joining [this Server](https://discord.gg/R7b74MP) and sending a private message to `dan1st#7327`.
 
 If you want to contribute Code, you may create a Pull Request.
 Please write your code clearly and understandable and follow the common Code Conventions.
