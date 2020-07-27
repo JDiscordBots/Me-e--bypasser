@@ -61,9 +61,22 @@ public class MsgListener extends ListenerAdapter{
 						}
 					});
 				}
-			} catch (JSONException | IOException e) {
+			} catch (JSONException e) {
 				if(LOG.isErrorEnabled()) {
 					LOG.error("Cannot load leveling data from the Mee API in guild {}", event.getGuild().getName(),e);
+				}
+			}catch(IOException e) {
+				if(e.getMessage()!=null&&e.getMessage().startsWith("Server returned HTTP response code: 401 for URL: ")) {
+					if(event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+						event.getChannel().sendMessage("The server leaderboard needs to be public for automatic role assigning to work.").queue();
+					}
+					if(LOG.isInfoEnabled()) {
+						LOG.info("Server leaderboard is not public for guild {}", event.getGuild().getName());
+					}
+				}else {
+					if(LOG.isErrorEnabled()) {
+						LOG.error("Cannot load leveling data from the Mee API in guild {}", event.getGuild().getName(),e);
+					}
 				}
 			}
 		}else if(event.getMessage().getContentRaw().startsWith("mb!")) {
