@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.util.Collections;
 
 import javax.security.auth.login.LoginException;
 
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
 
@@ -31,6 +33,7 @@ public class MeeBypasser {
 						.setActivity(Activity.watching("https://github.com/JDiscordBots/Mee6-bypasser"))
 						.setRequestTimeoutRetry(true)
 						.addEventListeners(new MsgListener());
+				MessageAction.setDefaultMentions(Collections.emptySet());
 				ShardManager manager=builder.build();
 				manager.getShards().forEach(jda->{
 					try {

@@ -56,8 +56,12 @@ public class MsgListener extends ListenerAdapter{
 				Map<Integer,String> gRoles=roles.get(event.getGuild().getId());
 				if(gRoles!=null) {
 					gRoles.forEach((k,v)->{
-						if(k<=level) {
-							event.getGuild().addRoleToMember(member, event.getGuild().getRoleById(v)).queue();
+						if(k<=level&&!member.getRoles().contains(event.getGuild().getRoleById(v))) {
+							if(event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)&&event.getGuild().getSelfMember().canInteract(event.getGuild().getRoleById(v))) {
+								event.getGuild().addRoleToMember(member, event.getGuild().getRoleById(v)).queue();
+							}else if(event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+								event.getChannel().sendMessage("Cannot assign role "+event.getGuild().getRoleById(v).getName()+" as "+event.getGuild().getSelfMember().getEffectiveName()+" does not have the necessary permissions.").queue();
+							}
 						}
 					});
 				}
@@ -68,7 +72,7 @@ public class MsgListener extends ListenerAdapter{
 			}catch(IOException e) {
 				if(e.getMessage()!=null&&e.getMessage().startsWith("Server returned HTTP response code: 401 for URL: ")) {
 					if(event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
-						event.getChannel().sendMessage("The server leaderboard needs to be public for automatic role assigning to work.").queue();
+						event.getChannel().sendMessage("The server leaderboard needs to be public for automatic role assigning to work. This can be configured on https://mee6.xyz/dashboard/"+event.getGuild().getId()+"/leaderboard").queue();
 					}
 					if(LOG.isInfoEnabled()) {
 						LOG.info("Server leaderboard is not public for guild {}", event.getGuild().getName());
@@ -167,10 +171,17 @@ public class MsgListener extends ListenerAdapter{
 						return;
 					}
 					String name=String.join(" ",args);
-					EmbedBuilder eb=new EmbedBuilder();
-					eb.setTitle("Roles of name `"+name+"`");
-					eb.setDescription(event.getGuild().getRolesByName(name, true).stream().map(role->role.getAsMention()+" ("+role.getId()+")").collect(Collectors.joining("\n")));
-					event.getChannel().sendMessage(eb.build()).queue();
+					String title="Roles of name `"+name+"`";
+					String desc=event.getGuild().getRolesByName(name, true).stream().map(role->role.getAsMention()+" ("+role.getId()+")").collect(Collectors.joining("\n"));
+					if(event.getGuild().getSelfMember().hasPermission(event.getChannel(),Permission.MESSAGE_EMBED_LINKS)) {
+						EmbedBuilder eb=new EmbedBuilder();
+						eb.setTitle(title);
+						eb.setDescription(desc);
+						event.getChannel().sendMessage(eb.build()).queue();
+					}else {
+						event.getChannel().sendMessage("**"+title+"**\n"+desc).queue();
+					}
+					
 					break;
 				}
 				case "list":{
