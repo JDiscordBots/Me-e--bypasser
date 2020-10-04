@@ -12,8 +12,10 @@ You can select roles, that are given to users that reach a certain Mee6-Level.
 
 Do not include greater than/lower than signs (`<>`) in the commands.
 
-Note that this does only work if the leaderboard is public.
+Note that this does only work if the leaderboard is public and is limited to 1000 members per server.
 
-Click [here](https://discordapp.com/api/oauth2/authorize?client_id=644830792845099009&permissions=268435456&scope=bot) in order to invite an instance of the Bot.
+Click [here](https://discord.com/api/oauth2/authorize?client_id=644830792845099009&permissions=268520448&scope=bot) in order to invite an instance of the Bot.
 
 We do not guarantee uptime or functionality of the bot and/or any instance of the bot in any way.
+
+Other bots offer that feature with their own leveling system for free, you can try those too.

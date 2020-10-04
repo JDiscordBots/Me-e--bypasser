@@ -19,10 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.internal.JDAImpl;
 
 public class MsgListener extends ListenerAdapter{
 	
@@ -44,7 +46,9 @@ public class MsgListener extends ListenerAdapter{
 	}
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-		if(event.getMessage().getContentRaw().startsWith("!rank")) {
+		String msgContent=event.getMessage().getContentRaw();
+		Guild g=event.getGuild();
+		if(msgContent.startsWith("!rank")) {
 			try {
 				Member member;
 				if(event.getMessage().getMentionedMembers().isEmpty()) {
@@ -52,22 +56,24 @@ public class MsgListener extends ListenerAdapter{
 				}else {
 					member=event.getMessage().getMentionedMembers().get(0);
 				}
-				int level = MeeAPI.getLevel(event.getGuild().getId(), member.getId());
+				int level = MeeAPI.getLevel(g.getId(), member.getId());
 				Map<Integer,String> gRoles=roles.get(event.getGuild().getId());
+				Member selfMember=g.getSelfMember();
 				if(gRoles!=null) {
 					gRoles.forEach((k,v)->{
-						if(k<=level&&!member.getRoles().contains(event.getGuild().getRoleById(v))) {
-							if(event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES)&&event.getGuild().getSelfMember().canInteract(event.getGuild().getRoleById(v))) {
-								event.getGuild().addRoleToMember(member, event.getGuild().getRoleById(v)).queue();
+						Role role=g.getRoleById(v);
+						if(k<=level&&!member.getRoles().contains(role)) {
+							if(selfMember.hasPermission(Permission.MANAGE_ROLES)&&selfMember.canInteract(role)) {
+								g.addRoleToMember(member, role).queue();
 							}else if(event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
-								event.getChannel().sendMessage("Cannot assign role "+event.getGuild().getRoleById(v).getName()+" as "+event.getGuild().getSelfMember().getEffectiveName()+" does not have the necessary permissions.").queue();
+								event.getChannel().sendMessage("Cannot assign role "+role).getName()+" as "+selfMember.getEffectiveName()+" does not have the necessary permissions.").queue();
 							}
 						}
 					});
 				}
 			} catch (JSONException e) {
 				if(LOG.isErrorEnabled()) {
-					LOG.error("Cannot load leveling data from the Mee API in guild {}", event.getGuild().getName(),e);
+					LOG.error("Cannot load leveling data from the Mee API in guild {}", g.getName(),e);
 				}
 			}catch(IOException e) {
 				if(e.getMessage()!=null&&e.getMessage().startsWith("Server returned HTTP response code: 401 for URL: ")) {
