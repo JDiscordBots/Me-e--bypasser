@@ -38,7 +38,7 @@ public final class MeeAPI {
 					return player.getInt("level");
 				}
 			}
-		}while(!players.isEmpty());
+		}while(players.length()==NUM_OF_ENTRIES);
 		return 0;
 	}
 }
