@@ -14,26 +14,31 @@ import org.json.JSONObject;
 
 public final class MeeAPI {
 	private static final String URL="https://mee6.xyz/api/plugins/levels/leaderboard/";
+	private static final int NUM_OF_ENTRIES=100;
 	
 	private MeeAPI() {
 		//prevent instantiation
 	}
 	
-	private static JSONObject getLeaderBoardData(String gId) throws IOException {
-		URLConnection con = new URL(URL+gId+"?limit=1000").openConnection();
+	private static JSONObject getLeaderBoardData(String gId,int page) throws IOException {
+		URLConnection con = new URL(URL+gId+"?limit="+NUM_OF_ENTRIES+"&page="+page).openConnection();
 		con.setRequestProperty("User-Agent", UUID.randomUUID().toString());
 		try(BufferedReader reader=new BufferedReader(new InputStreamReader(con.getInputStream(),StandardCharsets.UTF_8))){
 			return new JSONObject(reader.lines().collect(Collectors.joining(" ")));
 		}
 	}
 	public static int getLevel(String guildId,String uID) throws IOException {
-		JSONArray players = getLeaderBoardData(guildId).getJSONArray("players");
-		for (int i = 0; i < players.length(); i++) {
-			JSONObject player = players.getJSONObject(i);
-			if(uID.equals(player.getString("id"))) {
-				return player.getInt("level");
+		JSONArray players;
+		int page=0;
+		do {
+			players = getLeaderBoardData(guildId,page++).getJSONArray("players");
+			for (int i = 0; i < players.length(); i++) {
+				JSONObject player = players.getJSONObject(i);
+				if(uID.equals(player.getString("id"))) {
+					return player.getInt("level");
+				}
 			}
-		}
+		}while(!players.isEmpty());
 		return 0;
 	}
 }
