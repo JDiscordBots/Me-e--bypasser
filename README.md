@@ -8,11 +8,12 @@ You can select roles, that are given to users that reach a certain Mee6-Level.
 * In order to remove roles, you can send a message `mb!remove <Level number>`
 * In order to show all assigned roles, you can send a message `mb!show`
 * In order to get the id of a role, you can send a message `mb!id <Role name>`
+* In order to configure whether roles should be removed if someone reaches a higher role, you can send a message `mb!toggle`.
 * Users get the roles when executing `!rank`
 
 Do not include greater than/lower than signs (`<>`) in the commands.
 
-Note that this does only work if the leaderboard is public and is limited to 1000 members per server.
+Note that this does only work if the leaderboard is public.
 
 Click [here](https://discord.com/api/oauth2/authorize?client_id=644830792845099009&permissions=268520448&scope=bot) in order to invite an instance of the Bot.
 

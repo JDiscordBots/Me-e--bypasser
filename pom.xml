@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>mee-bypasser</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<parent>
 		<groupId>io.github.jdiscordbots</groupId>
 		<artifactId>jdiscordbots-parent</artifactId>
@@ -19,12 +19,12 @@
 		<dependency>
 			<groupId>net.dv8tion</groupId>
 			<artifactId>JDA</artifactId>
-			<version>4.2.0_204</version>
+			<version>4.2.0_222</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20200518</version>
+			<version>20201115</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.jdiscordbots</groupId>

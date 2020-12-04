@@ -14,17 +14,14 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MsgListener extends ListenerAdapter {
 
 	private static final Logger LOG=LoggerFactory.getLogger(MsgListener.class);
 	private static final String FILE_NAME = "roles.dat";
-	private static Map<String, Map<Integer, String>> roles = new HashMap<>();
+	private static DataStorage data =new DataStorage();
 
 	public MsgListener() {
 		if(new File(FILE_NAME).exists()) {
@@ -67,53 +64,30 @@ public class MsgListener extends ListenerAdapter {
 					member=event.getMessage().getMentionedMembers().get(0);
 				}
 
-				if (member == null)
+				if (member == null){
 					return;
+				}
 
 				final int level = MeeAPI.getLevel(event.getGuild().getId(), member.getId());
-				final Map<Integer, String> gRoles = roles.get(event.getGuild().getId());
-
-				if(gRoles != null) {
-					Set<Role> rolesToRemove=new HashSet<>();
-					Holder<Role> roleToAdd=new Holder<>(null);
-					Holder<Integer> highestLevelRole=new Holder<>(0);
-					gRoles.forEach((k, v) ->
-					{
-						final Role role = event.getGuild().getRoleById(v);
-
-						if (role == null)
-							return;
-
-						if(k <= level) {
-							if(hasModPerm(event.getGuild().getSelfMember()) && event.getGuild().getSelfMember().canInteract(role)) {
-
-								if(roleToAdd.get()==null){
-									roleToAdd.set(role);
-									highestLevelRole.set(k);
-								}else if(k>highestLevelRole.get()){
-									rolesToRemove.add(roleToAdd.get());
-									roleToAdd.set(role);
-									highestLevelRole.set(k);
-								}else{
-									rolesToRemove.add(role);
+				final Map<String,Boolean> rolesToChange= data.getRoleIdsForGuildAtLevel(event.getGuild().getId(), level);
+				rolesToChange.forEach((roleId,add)->{
+					final Role role = event.getGuild().getRoleById(roleId);
+					if(role!=null) {
+						if(hasModPerm(event.getGuild().getSelfMember()) && event.getGuild().getSelfMember().canInteract(role)) {
+							if(add) {
+								if(!member.getRoles().contains(role)){
+									event.getGuild().addRoleToMember(member, role).queue();
 								}
-							} else if(member.hasPermission(Permission.ADMINISTRATOR)) {
-								event.getChannel().sendMessage("Cannot assign role " + role.getName() + " as " + event.getGuild().getSelfMember().getEffectiveName() + " does not have the necessary permissions.").queue();
+							}else {
+								if(member.getRoles().contains(role)){
+									event.getGuild().removeRoleFromMember(member, role).queue();
+								}
 							}
-						}
-					});
-					if(roleToAdd.get()!=null){
-						for(Role role : rolesToRemove) {
-							if(member.getRoles().contains( roleToAdd.get())){
-								event.getGuild().removeRoleFromMember(member,role).queue();
-							}
-						}
-						if(!member.getRoles().contains( roleToAdd.get())){
-							event.getGuild().addRoleToMember(member, roleToAdd.get()).queue();
+						} else if(member.hasPermission(Permission.ADMINISTRATOR)) {
+							event.getChannel().sendMessage("Cannot assign role " + role.getName() + " as " + event.getGuild().getSelfMember().getEffectiveName() + " does not have the necessary permissions.").queue();
 						}
 					}
-
-				}
+				});
 			} catch (JSONException e) {
 				if(LOG.isErrorEnabled()) {
 					LOG.error("Cannot load leveling data from the Mee API in guild {}", g.getName(),e);
@@ -167,14 +141,8 @@ public class MsgListener extends ListenerAdapter {
 						event.getChannel().sendMessage("Error - Role not found").queue();
 						return;
 					}
-					Map<Integer,String> gRoles;
-					if(roles.containsKey(event.getGuild().getId())) {
-						gRoles=roles.get(event.getGuild().getId());
-					} else {
-						gRoles=new HashMap<>();
-						roles.put(event.getGuild().getId(), gRoles);
-					}
-					gRoles.put(level, role.getId());
+					
+					data.setRole(event.getGuild().getId(), level, role.getId());
 					try {
 						save();
 					} catch(IOException e) {
@@ -182,8 +150,7 @@ public class MsgListener extends ListenerAdapter {
 					}
 					event.getChannel().sendMessage("added Role "+role.getName()+" for level "+level).queue();
 					break;
-				}
-				case "remove": {
+				} case "remove": {
 					int level;
 					try {
 						level = Integer.parseInt(args[0]);
@@ -191,14 +158,7 @@ public class MsgListener extends ListenerAdapter {
 						event.getChannel().sendMessage("Error - level required").queue();
 						return;
 					}
-					String id = null;
-					if(roles.containsKey(event.getGuild().getId())) {
-						Map<Integer,String> gRoles=roles.get(event.getGuild().getId());
-						id = gRoles.remove(level);
-						if(gRoles.isEmpty()) {
-							roles.remove(event.getGuild().getId());
-						}
-					}
+					String id = data.removeRole(event.getGuild().getId(), level);
 
 					final Role role;
 
@@ -213,25 +173,30 @@ public class MsgListener extends ListenerAdapter {
 						LOG.error("Cannot save data",e);
 					}
 					break;
-				}
-				case "show": {
-					if(roles.containsKey(event.getGuild().getId())) {
-						event.getChannel().sendMessage("" + roles.get(event.getGuild().getId()).entrySet().stream().map(e ->
+				} case "show":
+				case "list":{
+					Map <Integer, String> gRoles = data.getRoles(event.getGuild().getId());
+					if(!gRoles.isEmpty()){
+						event.getChannel().sendMessage("" + gRoles.entrySet().stream().map(e ->
 						{
 							final Role role = event.getGuild().getRoleById(e.getValue());
-
 							if (role != null)
 								return "Level " + e.getKey() + " is assigned to role " + role.getAsMention();
-
 							return "";
-
-						}).collect(Collectors.joining("\n"))).allowedMentions(Collections.emptyList()).queue();
-					} else {
-						event.getChannel().sendMessage("no roles").queue();
+						}).collect(Collectors.joining("\n"))+"\nRoles will "+((data.isAutoRemoveLevels(event.getGuild().getId()))?"":"**not** ")+"be removed if someone reaches a higher role.").allowedMentions(Collections.emptyList()).queue();
 					}
 					break;
-				}
-				case "id": {
+				} case "toggle":{
+					boolean rem=!data.isAutoRemoveLevels(event.getGuild().getId());
+					data.setAutoRemoveLevels(event.getGuild().getId(),rem);
+					try {
+						save();
+						event.getChannel().sendMessage("Roles will now "+(rem?"":"**not** ")+"be removed if someone reaches a higher role.").queue();
+					} catch(IOException e) {
+						LOG.error("Cannot save data",e);
+					}
+					break;
+				} case "id": {
 					if(args.length < 1) {
 						event.getChannel().sendMessage("missing args").queue();
 						return;
@@ -250,28 +215,8 @@ public class MsgListener extends ListenerAdapter {
 					} else {
 						event.getChannel().sendMessage("**"+title+"**\n"+desc).queue();
 					}
-
 					break;
-				}
-				case "list": {
-					final Map<Integer, String> gRoles = roles.get(event.getGuild().getId());
-
-					if(gRoles == null || gRoles.isEmpty()) {
-						event.getChannel().sendMessage("Mee-bypasser is not set up for this guild!").queue();
-					} else {
-						event.getChannel().sendMessage(gRoles.entrySet().stream().map(entry ->
-						{
-							final Role role = event.getGuild().getRoleById(entry.getValue());
-
-							if (role != null)
-								return "Level: " + entry.getKey() + ", Role: " + role.getAsMention();
-
-							return "";
-						}).collect(Collectors.joining("\n"))).allowedMentions(Collections.emptyList()).queue();
-					}
-					break;
-				}
-				default: {
+				} default: {
 					event.getChannel().sendMessage("Command not found: "+command).queue();
 				}
 			}
@@ -280,14 +225,25 @@ public class MsgListener extends ListenerAdapter {
 
 	private static void save() throws IOException {
 		try(ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(FILE_NAME)))) {
-			oos.writeObject(roles);
+			oos.writeObject(data);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private static void load() throws IOException, ClassNotFoundException {
 		try(ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(FILE_NAME)))) {
-			roles=(Map<String, Map<Integer, String>>) ois.readObject();
+			Object readObj=ois.readObject();
+			if(readObj instanceof Map) {
+				data =new DataStorage((Map<String, Map<Integer, String>>) readObj);
+				save();//overwrite
+			}else if(readObj instanceof DataStorage){
+				data =(DataStorage)readObj;
+			}else if(readObj==null){
+				throw new IOException("read object is null");
+			}else{
+				throw new IOException("deserialized object has unexcepted data type"+readObj.getClass().getName());
+			}
+			
 		}
 	}
 }
