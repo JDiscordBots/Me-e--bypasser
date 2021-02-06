@@ -9,6 +9,12 @@
 		<artifactId>jdiscordbots-parent</artifactId>
 		<version>1.0.3</version>
 	</parent>
+	<repositories>
+		<repository>
+			<id>EclipseLink</id>
+			<url>http://download.eclipse.org/rt/eclipselink/maven.repo</url>
+		</repository>
+	</repositories>
 	<licenses>
 		<license>
 			<name>GNU GPL Version 3.0</name>
@@ -19,7 +25,7 @@
 		<dependency>
 			<groupId>net.dv8tion</groupId>
 			<artifactId>JDA</artifactId>
-			<version>4.2.0_222</version>
+			<version>4.2.0_227</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
@@ -29,13 +35,33 @@
 		<dependency>
 			<groupId>io.github.jdiscordbots</groupId>
 			<artifactId>nightdream-logging</artifactId>
-			<version>1.1.10</version>
+			<version>1.1.11</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>2.0.0-alpha1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>eclipselink</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>org.eclipse.persistence.jpa</artifactId>
+			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>org.eclipse.persistence.extension</artifactId>
+			<version>2.7.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.200</version>
 		</dependency>
 	</dependencies>
 	<properties>

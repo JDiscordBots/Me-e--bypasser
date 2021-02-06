@@ -15,6 +15,10 @@ Do not include greater than/lower than signs (`<>`) in the commands.
 
 Note that this does only work if the leaderboard is public.
 
+### Ratelimits
+
+This bot only allows one rank update per guild per minute in order to avoid API spam.
+
 ## Build the bot
 
 ### Requirements

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd" version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
+	<persistence-unit name="sqlite" transaction-type="RESOURCE_LOCAL">
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<exclude-unlisted-classes>false</exclude-unlisted-classes>
+		<properties>
+			<!--<property name="javax.persistence.jdbc.driver" value="org.sqlite.JDBC" />-->
+			<property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver" />
+			
+			<property name="jakarta.persistence.jdbc.url" value="jdbc:h2:./roles" />
+			<property name="jakarta.persistence.jdbc.user" value="sa"/>
+			<property name="eclipselink.ddl-generation" value="create-tables" />
+			<property name="eclipselink.ddl-generation.output-mode" value="database" />
+			<property name="eclipselink.target-database" value="org.eclipse.persistence.platform.database.H2Platform"/>
+			<property name="eclipse.weaving" value="true" />
+			<property name="eclipselink.weaving.lazy" value="true" />
+			<property name="eclipselink.logging.logger" value="org.eclipse.persistence.logging.slf4j.SLF4JLogger"/>
+			<!--<property name="eclipselink." value="" />
+			<property name="eclipselink." value="" />
+			<property name="eclipselink." value="" />
+			<property name="eclipselink.logging.logger" value="ServerLogger" />
+			<property name="eclipselink.logging.level.sql" value="FINE"/>
+ 			<property name="eclipselink.logging.parameters" value="true"/>-->
+		</properties>
+	</persistence-unit>
+</persistence>

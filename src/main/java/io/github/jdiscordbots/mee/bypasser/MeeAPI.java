@@ -27,6 +27,7 @@ public final class MeeAPI {
 			return new JSONObject(reader.lines().collect(Collectors.joining(" ")));
 		}
 	}
+	
 	public static int getLevel(String guildId,String uID) throws IOException {
 		JSONArray players;
 		int page=0;
