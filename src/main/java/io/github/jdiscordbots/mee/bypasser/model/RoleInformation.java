@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name="roles",uniqueConstraints = {@UniqueConstraint(columnNames = {"guild","level"},name = "unq_levelperguild"),@UniqueConstraint(columnNames = "roleId",name="unq_roleperguild")})
+@Table(name="roles",uniqueConstraints = {@UniqueConstraint(columnNames = {"guild","level"},name = "unq_levelperguild")/*,@UniqueConstraint(columnNames = "roleId",name="unq_roleperguild")*/})
 public class RoleInformation {
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -75,12 +75,11 @@ public class MsgListener extends ListenerAdapter {
 				if (member == null) {
 					return;
 				}
-
-				final int level = MeeAPI.getLevel(event.getGuild().getId(), member.getId());
 				final GuildInformation guildInfo = database.loadGuildInformation(event.getGuild().getId());
 				if (guildInfo.getLastRankCall() + RATE_LIMIT > System.currentTimeMillis()) {
 					return;
 				}
+				final int level = MeeAPI.getLevel(event.getGuild().getId(), member.getId());
 				guildInfo.setLastRankCall(System.currentTimeMillis());
 				database.save(guildInfo);
 				guildInfo.getRoleIdsAtLevel(level).forEach((roleId, add) -> {
