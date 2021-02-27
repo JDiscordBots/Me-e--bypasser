@@ -31,7 +31,8 @@ public class DataBaseController implements AutoCloseable {
 	private EntityManagerFactory entityManagerFactory;
 	private EntityManager entityManager;
 
-	private Query deleteRoleStatement;
+	private Query deleteRoleByLevelStatement;
+	private Query deleteRoleByIdStatement;
 
 	private TypedQuery<String> loadRoleStatement;
 
@@ -69,8 +70,10 @@ public class DataBaseController implements AutoCloseable {
 		}
 		entityManagerFactory = Persistence.createEntityManagerFactory("sqlite");
 		entityManager = entityManagerFactory.createEntityManager();
-		deleteRoleStatement = entityManager
+		deleteRoleByLevelStatement = entityManager
 				.createQuery("DELETE FROM RoleInformation WHERE guild.guildId = :guild AND level = :level");
+		deleteRoleByIdStatement = entityManager
+				.createQuery("DELETE FROM RoleInformation WHERE guild.guildId = :guild AND roleId = :role");
 		loadRoleStatement = entityManager.createQuery(
 				"SELECT i.roleId FROM RoleInformation i WHERE i.guild.guildId = :guild AND i.level = :level",
 				String.class);
@@ -95,14 +98,17 @@ public class DataBaseController implements AutoCloseable {
 		}
 	}
 
-	private void executeInTransaction(Runnable toExecute) {
+	public void executeInTransaction(Runnable toExecute) {
 		executeInTransaction(() -> {
 			toExecute.run();
 			return null;
 		});
 	}
 
-	private <T> T executeInTransaction(Supplier<T> toExecute) {
+	public <T> T executeInTransaction(Supplier<T> toExecute) {
+		if(entityManager.getTransaction().isActive()) {
+			return toExecute.get();
+		}
 		try {
 			entityManager.getTransaction().begin();
 			T result = toExecute.get();
@@ -168,24 +174,37 @@ public class DataBaseController implements AutoCloseable {
 		}
 	}
 
-	public String removeRole(String id, int level) {
+	public String removeRole(String guildId, int level) {
 		return executeInTransaction(() -> {
-			GuildInformation guildInformation = loadGuildInformation(id);
+			GuildInformation guildInformation = loadGuildInformation(guildId);
 			if (!guildInformation.getRoles().removeIf(role -> role.getLevel() == level)) {
 				return null;
 			}
-			String ret = getRole(id, level);
+			String ret = getRole(guildId, level);
 			if (ret == null) {
 				return null;
 			}
-			deleteRoleStatement.setParameter("guild", id);
-			deleteRoleStatement.setParameter("level", level);
-			int delCount=deleteRoleStatement.executeUpdate();
+			deleteRoleByLevelStatement.setParameter("guild", guildId);
+			deleteRoleByLevelStatement.setParameter("level", level);
+			int delCount=deleteRoleByLevelStatement.executeUpdate();
 			if(delCount>0) {
 				entityManager.persist(guildInformation);
 				return ret;
 			}
 			return null;
 		});
+	}
+
+	public void removeRole(String guildId, String roleId) {
+		executeInTransaction(()->{
+			deleteRoleByIdStatement.setParameter("guild", guildId);
+			deleteRoleByIdStatement.setParameter("role", roleId);
+			deleteRoleByIdStatement.executeUpdate();
+		});
+	}
+
+	public void removeRole(RoleInformation toRemove) {
+		removeRole(toRemove.getGuild().getGuildId(),toRemove.getRoleId());
+		entityManager.remove(toRemove);
 	}
 }

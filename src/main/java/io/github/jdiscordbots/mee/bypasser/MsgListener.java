@@ -18,6 +18,8 @@ import io.github.jdiscordbots.mee.bypasser.model.RoleInformation;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 
 public class MsgListener extends ListenerAdapter {
@@ -163,15 +165,26 @@ public class MsgListener extends ListenerAdapter {
 					event.getChannel().sendMessage("Error - Role not found").queue();
 					return;
 				}
-				GuildInformation info = database.loadGuildInformation(event.getGuild().getId());
 				String roleId = role.getId();
-				info.getRoles().removeIf(toRemove -> roleId.equals(toRemove.getRoleId()));
-				RoleInformation toAdd = new RoleInformation();
-				toAdd.setLevel(level);
-				toAdd.setRoleId(role.getId());
-				toAdd.setGuild(info);
-				info.getRoles().add(toAdd);
-				database.save(toAdd, info);
+				database.executeInTransaction(()->{
+					GuildInformation info = database.loadGuildInformation(event.getGuild().getId());
+					info.setRoles(new HashSet<>(info.getRoles()));
+					for(Iterator<RoleInformation> roleIter=info.getRoles().iterator();
+							roleIter.hasNext();) {
+						RoleInformation roleToCheck=roleIter.next();
+						if(roleId.equals(roleToCheck.getRoleId())||level==roleToCheck.getLevel()) {
+							database.removeRole(roleToCheck);
+							roleIter.remove();
+						}
+					}
+					RoleInformation toAdd = new RoleInformation();
+					toAdd.setLevel(level);
+					toAdd.setRoleId(roleId);
+					toAdd.setGuild(info);
+					info.getRoles().add(toAdd);
+					database.save(info,toAdd);
+				});
+				
 				event.getChannel().sendMessage("added Role " + role.getName() + " for level " + level).queue();
 				break;
 			}
