@@ -43,7 +43,7 @@ This bot only allows one rank update per guild per minute in order to avoid API 
 
 ## Public Instance
 
-Click [here](https://discord.com/api/oauth2/authorize?client_id=644830792845099009&permissions=268520448&scope=bot) in order to invite an instance of the Bot.
+Click [here](https://discord.com/api/oauth2/authorize?client_id=644830792845099009&permissions=268520448&scope=bot%20applications.commands) in order to invite an instance of the Bot.
 
 We do not guarantee uptime or functionality of the bot and/or any instance of the bot in any way.
 
