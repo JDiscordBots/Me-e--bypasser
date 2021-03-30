@@ -1,4 +1,4 @@
-package io.github.jdiscordbots.mee.bypasser.model;
+package io.github.jdiscordbots.mee.bypasser.model.db;
 
 import java.util.Objects;
 

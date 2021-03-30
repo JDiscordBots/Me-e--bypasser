@@ -20,8 +20,8 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import net.dv8tion.jda.api.audit.ThreadLocalReason.Closable;
 import io.github.jdiscordbots.mee.bypasser.MsgListener.Holder;
-import io.github.jdiscordbots.mee.bypasser.model.GuildInformation;
-import io.github.jdiscordbots.mee.bypasser.model.RoleInformation;
+import io.github.jdiscordbots.mee.bypasser.model.db.GuildInformation;
+import io.github.jdiscordbots.mee.bypasser.model.db.RoleInformation;
 
 public class DataBaseController implements AutoCloseable {
 

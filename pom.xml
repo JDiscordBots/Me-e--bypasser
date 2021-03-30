@@ -23,14 +23,17 @@
 	</licenses>
 	<dependencies>
 		<dependency>
-			<groupId>net.dv8tion</groupId>
+			<groupId>com.github.DV8FromTheWorld</groupId>
 			<artifactId>JDA</artifactId>
-			<version>4.2.0_227</version>
+			<version>feature~slash-commands-SNAPSHOT</version>
+			<!-- <groupId>net.dv8tion</groupId>
+			<artifactId>JDA</artifactId>
+			<version>4.2.0_227</version>-->
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20201115</version>
+			<version>20210307</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.jdiscordbots</groupId>

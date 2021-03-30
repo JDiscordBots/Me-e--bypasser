@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
@@ -35,10 +37,12 @@ public class MeeBypasser {
 						.createLight(reader.readLine(), GatewayIntent.getIntents(GatewayIntent.DEFAULT))
 						.setAutoReconnect(true).setStatus(OnlineStatus.ONLINE)
 						.setActivity(Activity.watching("https://github.com/JDiscordBots/Mee6-bypasser"))
-						.setRequestTimeoutRetry(true).addEventListeners(new MsgListener());
+						.setRequestTimeoutRetry(true);
 				MessageAction.setDefaultMentions(Collections.emptySet());
 				ShardManager manager = builder.build();
+				MsgListener listener = new MsgListener(manager);
 				for (JDA jda : manager.getShards()) {
+					jda.addEventListener(listener);
 					jda.awaitReady();
 				}
 			} catch (LoginException | IOException e) {

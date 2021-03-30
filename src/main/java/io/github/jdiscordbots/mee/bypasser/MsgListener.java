@@ -1,26 +1,38 @@
 package io.github.jdiscordbots.mee.bypasser;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.MessageEmbed.AuthorInfo;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ShutdownEvent;
+import net.dv8tion.jda.api.events.application.GenericApplicationCommandEvent;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.sharding.ShardManager;
+import net.dv8tion.jda.internal.entities.SystemMessage;
+
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.jdiscordbots.mee.bypasser.model.GuildInformation;
-import io.github.jdiscordbots.mee.bypasser.model.RoleInformation;
+import io.github.jdiscordbots.mee.bypasser.cmd.CommandManager;
+import io.github.jdiscordbots.mee.bypasser.cmd.commands.Command;
+import io.github.jdiscordbots.mee.bypasser.model.db.GuildInformation;
+import io.github.jdiscordbots.mee.bypasser.model.jda.wrappers.slash.ReceivedSlashCommand;
+import io.github.jdiscordbots.mee.bypasser.model.jda.wrappers.text.ReceivedTextCommand;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class MsgListener extends ListenerAdapter {
 
@@ -28,11 +40,13 @@ public class MsgListener extends ListenerAdapter {
 	private static final long RATE_LIMIT = 1000L * 60;
 	private static final Logger LOG = LoggerFactory.getLogger(MsgListener.class);
 
+	private CommandManager cmdManager;
 	private DataBaseController database;
 
-	public MsgListener() {
+	public MsgListener(ShardManager shardManager) {
 		try {
 			database = new DataBaseController();
+			cmdManager = new CommandManager(shardManager, database);
 		} catch (ClassNotFoundException | IOException e) {
 			LOG.error("Could not load role database", e);
 		}
@@ -59,79 +73,43 @@ public class MsgListener extends ListenerAdapter {
 	}
 
 	@Override
-	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-		String msgContent = event.getMessage().getContentRaw();
-		Guild g = event.getGuild();
-		if (event.getMessage().getMember() == null || event.getMessage().getMember().getUser().isBot()) {
+	public void onSlashCommand(SlashCommandEvent event) {
+		final Member member = event.getMember();
+
+		if (member == null || !hasModPerm(member)) {
+			event.reply("missing permissions").queue();
 			return;
 		}
-		if (msgContent.startsWith("!rank")) {
-			try {
-				final Member member;
-				if (event.getMessage().getMentionedMembers().isEmpty()) {
-					member = event.getMember();
-				} else {
-					member = event.getMessage().getMentionedMembers().get(0);
-				}
 
-				if (member == null) {
-					return;
-				}
-				final GuildInformation guildInfo = database.loadGuildInformation(event.getGuild().getId());
-				if (guildInfo.getLastRankCall() + RATE_LIMIT > System.currentTimeMillis()) {
-					return;
-				}
-				final int level = MeeAPI.getLevel(event.getGuild().getId(), member.getId());
-				guildInfo.setLastRankCall(System.currentTimeMillis());
-				database.save(guildInfo);
-				guildInfo.getRoleIdsAtLevel(level).forEach((roleId, add) -> {
-					final Role role = event.getGuild().getRoleById(roleId);
-					if (role != null) {
-						if (hasModPerm(event.getGuild().getSelfMember())
-								&& event.getGuild().getSelfMember().canInteract(role)) {
-							if (add.booleanValue()) {
-								if (!member.getRoles().contains(role)) {
-									event.getGuild().addRoleToMember(member, role).queue();
-								}
-							} else {
-								if (member.getRoles().contains(role)) {
-									event.getGuild().removeRoleFromMember(member, role).queue();
-								}
-							}
-						} else if (member.hasPermission(Permission.ADMINISTRATOR)) {
-							event.getChannel()
-									.sendMessage("Cannot assign role " + role.getName() + " as "
-											+ event.getGuild().getSelfMember().getEffectiveName()
-											+ " does not have the necessary permissions.")
-									.queue();
-						}
-					}
+		Command cmd = cmdManager.getCommand(event.getName());
+
+		if (cmd == null) {
+			event.reply("Command not found: " + event.getName()).queue();
+		} else {
+			event.acknowledge().queue();
+			cmd.execute(new ReceivedSlashCommand(event));
+		}
+	}
+
+	@Override
+	public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
+		if (event.getMember() == null) {
+			return;
+		}
+		if (event.getMember().getUser().isBot()) {
+			if (event.getAuthor().getIdLong() == 159985870458322944L) {//check if message is from Mee6
+				event.getChannel().retrieveMessageById(event.getMessageId()).queueAfter(1, TimeUnit.SECONDS, msg -> {
+					runIfMemberFound(msg,member->updateRole(member, event.getChannel(),null));
 				});
-			} catch (JSONException e) {
-				if (LOG.isErrorEnabled()) {
-					LOG.error("Cannot load leveling data from the Mee API in guild {}", g.getName(), e);
-				}
-			} catch (IOException e) {
-				if (e.getMessage() != null
-						&& e.getMessage().startsWith("Server returned HTTP response code: 401 for URL: ")) {
-					final Member member = event.getMember();
-
-					if (member != null && member.hasPermission(Permission.ADMINISTRATOR)) {
-						event.getChannel().sendMessage(
-								"The server leaderboard needs to be public for automatic role assigning to work. This can be configured on https://mee6.xyz/dashboard/"
-										+ event.getGuild().getId() + "/leaderboard")
-								.queue();
-					}
-					if (LOG.isInfoEnabled()) {
-						LOG.info("Server leaderboard is not public for guild {}", event.getGuild().getName());
-					}
-				} else {
-					if (LOG.isErrorEnabled()) {
-						LOG.error("Cannot load leveling data from the Mee API in guild {}", event.getGuild().getName(),
-								e);
-					}
-				}
 			}
+		} else if (event.getMessage().getContentRaw().startsWith("!rank")) {//check if message is from Mee6
+			final Member member;
+			if (event.getMessage().getMentionedMembers().isEmpty()) {
+				member = event.getMember();
+			} else {
+				member = event.getMessage().getMentionedMembers().get(0);
+			}
+			updateRole(member, event.getChannel(), null);
 		} else if (event.getMessage().getContentRaw().startsWith(PREFIX)) {
 			final Member member = event.getMember();
 
@@ -142,124 +120,97 @@ public class MsgListener extends ListenerAdapter {
 			final String[] args = Arrays.copyOfRange(split, 1, split.length);
 			final String command = split[0].substring(PREFIX.length()).toLowerCase();
 
-			switch (command) {
-			case "add": {
-				if (args.length < 2) {
-					event.getChannel().sendMessage("Error - missing args").queue();
-					return;
-				}
-				int level;
-				try {
-					level = Integer.parseInt(args[0]);
-				} catch (NumberFormatException e) {
-					event.getChannel().sendMessage("Error - level required").queue();
-					return;
-				}
-				Role role;
-				try {
-					role = event.getGuild().getRoleById(args[1]);
-				} catch (NumberFormatException e) {
-					role = null;
-				}
-				if (role == null) {
-					event.getChannel().sendMessage("Error - Role not found").queue();
-					return;
-				}
-				String roleId = role.getId();
-				database.executeInTransaction(()->{
-					GuildInformation info = database.loadGuildInformation(event.getGuild().getId());
-					info.setRoles(new HashSet<>(info.getRoles()));
-					for(Iterator<RoleInformation> roleIter=info.getRoles().iterator();
-							roleIter.hasNext();) {
-						RoleInformation roleToCheck=roleIter.next();
-						if(roleId.equals(roleToCheck.getRoleId())||level==roleToCheck.getLevel()) {
-							database.removeRole(roleToCheck);
-							roleIter.remove();
-						}
-					}
-					RoleInformation toAdd = new RoleInformation();
-					toAdd.setLevel(level);
-					toAdd.setRoleId(roleId);
-					toAdd.setGuild(info);
-					info.getRoles().add(toAdd);
-					database.save(info,toAdd);
-				});
-				
-				event.getChannel().sendMessage("added Role " + role.getName() + " for level " + level).queue();
-				break;
+			Command cmd = cmdManager.getCommand(command);
+			if (cmd == null) {
+				event.getChannel().sendMessage("Command not found: " + command).queue();
+			} else {
+				cmd.execute(new ReceivedTextCommand(event, cmd, args));
 			}
-			case "remove": {
-				int level;
-				try {
-					level = Integer.parseInt(args[0]);
-				} catch (NumberFormatException e) {
-					event.getChannel().sendMessage("Error - level required").queue();
-					return;
+		}
+	}
+	
+	private void runIfMemberFound(Message message,Consumer<Member> toRun) {
+		List<MessageEmbed> embeds = message.getEmbeds();
+		if (embeds.size() != 1) {
+			return;
+		}
+		MessageEmbed embed = embeds.get(0);
+		AuthorInfo author = embed.getAuthor();
+		if (author == null) {
+			return;
+		}
+		String iconUrl = author.getIconUrl();
+		if (iconUrl == null) {
+			return;
+		}
+		if(iconUrl.startsWith("https://cdn.discordapp.com/embed/avatars/")) {
+			message.getGuild().retrieveMembersByPrefix(author.getName(),1).onSuccess(members->{
+				if(!members.isEmpty()) {
+					toRun.accept(members.get(0));
 				}
-				String id = database.removeRole(event.getGuild().getId(), level);
+			});
+			return;
+		}
+		String[] splittedURL = iconUrl.split("/");
+		if (splittedURL.length != 6) {
+			return;
+		}
+		message.getGuild().retrieveMemberById(splittedURL[4]).queue(toRun);
+	}
 
-				final Role role;
-
-				if (id != null && (role = event.getGuild().getRoleById(id)) != null) {
-					event.getChannel().sendMessage("removed id " + role.getAsMention() + " from level " + level)
-							.allowedMentions(Collections.emptyList()).queue();
-				} else {
-					event.getChannel().sendMessage("no id for level " + level).allowedMentions(Collections.emptyList())
+	private void updateRole(Member member, TextChannel channel, Member author) {
+		try {
+			if (member == null) {
+				return;
+			}
+			final GuildInformation guildInfo = database.loadGuildInformation(member.getGuild().getId());
+			if (guildInfo.getLastRankCall() + RATE_LIMIT > System.currentTimeMillis()) {
+				return;
+			}
+			final int level = MeeAPI.getLevel(member.getGuild().getId(), member.getId());
+			guildInfo.setLastRankCall(System.currentTimeMillis());
+			database.save(guildInfo);
+			guildInfo.getRoleIdsAtLevel(level).forEach((roleId, add) -> {
+				final Role role = member.getGuild().getRoleById(roleId);
+				if (role != null) {
+					if (hasModPerm(member.getGuild().getSelfMember())
+							&& member.getGuild().getSelfMember().canInteract(role)) {
+						if (add.booleanValue()) {
+							if (!member.getRoles().contains(role)) {
+								member.getGuild().addRoleToMember(member, role).queue();
+							}
+						} else {
+							if (member.getRoles().contains(role)) {
+								member.getGuild().removeRoleFromMember(member, role).queue();
+							}
+						}
+					} else if (member.hasPermission(Permission.ADMINISTRATOR)) {
+						channel.sendMessage("Cannot assign role " + role.getName() + " as "
+								+ member.getGuild().getSelfMember().getEffectiveName()
+								+ " does not have the necessary permissions.").queue();
+					}
+				}
+			});
+		} catch (JSONException e) {
+			if (LOG.isErrorEnabled()) {
+				LOG.error("Cannot load leveling data from the Mee API in guild {}", member.getGuild().getName(), e);
+			}
+		} catch (IOException e) {
+			if (e.getMessage() != null
+					&& e.getMessage().startsWith("Server returned HTTP response code: 401 for URL: ")) {
+				if (author != null && author.hasPermission(Permission.ADMINISTRATOR)) {
+					channel.sendMessage(
+							"The server leaderboard needs to be public for automatic role assigning to work. This can be configured on https://mee6.xyz/dashboard/"
+									+ member.getGuild().getId() + "/leaderboard")
 							.queue();
 				}
-				break;
-			}
-			case "show":
-			case "list": {
-				GuildInformation guildInfo = database.loadGuildInformation(event.getGuild().getId());
-				event.getChannel().sendMessage("" + guildInfo.getRoles().stream().map(roleInfo -> {
-					final Role role = event.getGuild().getRoleById(roleInfo.getRoleId());
-					if (role != null) {
-						return "Level " + roleInfo.getLevel() + " is assigned to role " + role.getAsMention();
-					}
-					return "";
-				}).collect(Collectors.joining("\n")) + "\nRoles will "
-						+ ((guildInfo.isAutoRemoveLevels()) ? "" : "**not** ")
-						+ "be removed if someone reaches a higher role.").allowedMentions(Collections.emptyList())
-						.queue();
-				break;
-			}
-			case "toggle": {
-				GuildInformation guildInfo = database.loadGuildInformation(event.getGuild().getId());
-				boolean rem = !guildInfo.isAutoRemoveLevels();
-				guildInfo.setAutoRemoveLevels(rem);
-				database.save(guildInfo);
-				event.getChannel().sendMessage(
-						"Roles will now " + (rem ? "" : "**not** ") + "be removed if someone reaches a higher role.")
-						.queue();
-				break;
-			}
-			case "id": {
-				if (args.length < 1) {
-					event.getChannel().sendMessage("missing args").queue();
-					return;
+				if (LOG.isInfoEnabled()) {
+					LOG.info("Server leaderboard is not public for guild {}", member.getGuild().getName());
 				}
-
-				final String name = String.join(" ", args);
-				final String title = "Roles of name `" + name + "`";
-				final String desc = event.getGuild().getRolesByName(name, true).stream()
-						.map(role -> role.getAsMention() + " (" + role.getId() + ")").collect(Collectors.joining("\n"));
-
-				if (event.getGuild().getSelfMember().hasPermission(event.getChannel(),
-						Permission.MESSAGE_EMBED_LINKS)) {
-					final EmbedBuilder eb = new EmbedBuilder();
-					eb.setTitle(title);
-					eb.setDescription(desc);
-
-					event.getChannel().sendMessage(eb.build()).queue();
-				} else {
-					event.getChannel().sendMessage("**" + title + "**\n" + desc).queue();
+			} else {
+				if (LOG.isErrorEnabled()) {
+					LOG.error("Cannot load leveling data from the Mee API in guild {}", member.getGuild().getName(), e);
 				}
-				break;
-			}
-			default: {
-				event.getChannel().sendMessage("Command not found: " + command).queue();
-			}
 			}
 		}
 	}
