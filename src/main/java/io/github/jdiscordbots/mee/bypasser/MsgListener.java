@@ -97,12 +97,13 @@ public class MsgListener extends ListenerAdapter {
 			return;
 		}
 		if (event.getMember().getUser().isBot()) {
-			if (event.getAuthor().getIdLong() == 159985870458322944L) {//check if message is from Mee6
-				event.getChannel().retrieveMessageById(event.getMessageId()).queueAfter(1, TimeUnit.SECONDS, msg -> {
-					runIfMemberFound(msg,member->updateRole(member, event.getChannel(),null));
-				});
+			if (event.getAuthor().getIdLong() == 159985870458322944L //check if message is from Mee6
+					&& event.getGuild().getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_HISTORY)) {
+				event.getChannel().retrieveMessageById(event.getMessageId()).queueAfter(1, TimeUnit.SECONDS,
+						msg -> runIfMemberFound(msg, member -> updateRole(member, event.getChannel(), null)));
+
 			}
-		} else if (event.getMessage().getContentRaw().startsWith("!rank")) {//check if message is from Mee6
+		} else if (event.getMessage().getContentRaw().startsWith("!rank")) { //check if message is rank query
 			final Member member;
 			if (event.getMessage().getMentionedMembers().isEmpty()) {
 				member = event.getMember();
@@ -128,8 +129,8 @@ public class MsgListener extends ListenerAdapter {
 			}
 		}
 	}
-	
-	private void runIfMemberFound(Message message,Consumer<Member> toRun) {
+
+	private void runIfMemberFound(Message message, Consumer<Member> toRun) {
 		List<MessageEmbed> embeds = message.getEmbeds();
 		if (embeds.size() != 1) {
 			return;
@@ -143,9 +144,9 @@ public class MsgListener extends ListenerAdapter {
 		if (iconUrl == null) {
 			return;
 		}
-		if(iconUrl.startsWith("https://cdn.discordapp.com/embed/avatars/")) {
-			message.getGuild().retrieveMembersByPrefix(author.getName(),1).onSuccess(members->{
-				if(!members.isEmpty()) {
+		if (iconUrl.startsWith("https://cdn.discordapp.com/embed/avatars/")) {
+			message.getGuild().retrieveMembersByPrefix(author.getName(), 1).onSuccess(members -> {
+				if (!members.isEmpty()) {
 					toRun.accept(members.get(0));
 				}
 			});
