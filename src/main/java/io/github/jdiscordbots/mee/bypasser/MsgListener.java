@@ -145,18 +145,21 @@ public class MsgListener extends ListenerAdapter {
 			return;
 		}
 		if (iconUrl.startsWith("https://cdn.discordapp.com/embed/avatars/")) {
-			message.getGuild().retrieveMembersByPrefix(author.getName(), 1).onSuccess(members -> {
-				if (!members.isEmpty()) {
-					toRun.accept(members.get(0));
-				}
-			});
+			runIfMemberByPrefixFound(message.getGuild(),author,toRun);
 			return;
 		}
 		String[] splittedURL = iconUrl.split("/");
 		if (splittedURL.length != 6) {
 			return;
 		}
-		message.getGuild().retrieveMemberById(splittedURL[4]).queue(toRun);
+		message.getGuild().retrieveMemberById(splittedURL[4]).queue(toRun,t->runIfMemberByPrefixFound(message.getGuild(),author,toRun));
+	}
+	private void runIfMemberByPrefixFound(Guild g,AuthorInfo author,Consumer<Member> toRun) {
+		g.retrieveMembersByPrefix(author.getName(), 1).onSuccess(members -> {
+			if (!members.isEmpty()) {
+				toRun.accept(members.get(0));
+			}
+		});
 	}
 
 	private void updateRole(Member member, TextChannel channel, Member author) {
