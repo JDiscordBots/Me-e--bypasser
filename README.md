@@ -1,4 +1,4 @@
-# Mee6 (premium level-role) bypasser
+# Me(e) (premium level-role) bypasser
 
 This Discord Bot bypasses a premium feature of the Bot Mee6, that you can use it for free.
 
