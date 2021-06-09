@@ -31,7 +31,7 @@ This bot only allows one rank update per guild per minute in order to avoid API 
   This creates a file called `mee-bypasser.jar` in a directory named `target`
 
 ### Running
-* Obtain the file `mee-bypasser.jar` (see `Building`)
+* Obtain the file `mee-bypasser.jar` (see [Building](https://github.com/JDiscordBots/Me-e--bypasser#building))
 * Create a text file called `.token` and copy your bot token (from <https://discord.com/developers/applications/me>) in this file.
 * Run the command `java -jar mee-bypasser.jar` in the directory with those files
 
