@@ -7,6 +7,7 @@ import io.github.jdiscordbots.command_framework.command.CommandEvent;
 import io.github.jdiscordbots.command_framework.command.ICommand;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 
 public abstract class AbstractCommand implements ICommand {
@@ -26,7 +27,7 @@ public abstract class AbstractCommand implements ICommand {
 	@Override
 	public boolean allowExecute(CommandEvent event) {
 		for (CommandPrivilege priv : getPrivileges(event.getGuild())) {
-			if(event.getMember().getRoles().stream().anyMatch(priv.getId()::equals)) {
+			if(event.getMember().getRoles().stream().map(Role::getId).anyMatch(priv.getId()::equals)) {
 				return true;
 			}
 		}
