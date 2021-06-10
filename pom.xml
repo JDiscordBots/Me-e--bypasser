@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>net.dv8tion</groupId>
 			<artifactId>JDA</artifactId>
-			<version>4.2.1_273</version>
+			<version>4.2.1_276</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.jdiscordbots</groupId>
@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>io.github.jdiscordbots</groupId>
 			<artifactId>nightdream-logging</artifactId>
-			<version>1.1.10</version>
+			<version>1.1.11</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -56,17 +56,17 @@
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
-			<version>3.0.1</version>
+			<version>3.0.2-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>org.eclipse.persistence.jpa</artifactId>
-			<version>3.0.1</version>
+			<version>3.0.2-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>org.eclipse.persistence.extension</artifactId>
-			<version>3.0.1</version>
+			<version>3.0.2-RC1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
