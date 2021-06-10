@@ -40,7 +40,7 @@ public class MeeBypasser {
 				MessageAction.setDefaultMentions(Collections.emptySet());
 				CommandFramework framework=new CommandFramework();
 				framework.setSlashCommandsPerGuild(true);
-				framework.setPrefix("mb!").setRemoveUnknownSlashCommands(true);
+				framework.setPrefix("mb!");
 				builder.addEventListeners(framework.build(),new MsgListener());
 				ShardManager manager = builder.build();
 						
