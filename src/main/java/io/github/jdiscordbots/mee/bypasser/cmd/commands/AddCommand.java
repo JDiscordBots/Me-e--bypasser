@@ -1,60 +1,57 @@
 package io.github.jdiscordbots.mee.bypasser.cmd.commands;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
+import io.github.jdiscordbots.command_framework.command.ArgumentTemplate;
+import io.github.jdiscordbots.command_framework.command.Command;
+import io.github.jdiscordbots.command_framework.command.CommandEvent;
 import io.github.jdiscordbots.mee.bypasser.DataBaseController;
 import io.github.jdiscordbots.mee.bypasser.model.db.GuildInformation;
 import io.github.jdiscordbots.mee.bypasser.model.db.RoleInformation;
-import io.github.jdiscordbots.mee.bypasser.model.jda.wrappers.ReceivedCommand;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.Command.OptionType;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
-public class AddCommand implements Command{
+@Command("add")
+public class AddCommand extends AbstractCommand{
 
 	private DataBaseController database;
 	
-	public AddCommand(DataBaseController database) {
-		this.database = database;
+	public AddCommand() {
+		this.database = DataBaseController.getInstance();
 	}
 
 	@Override
-	public String[] getNames() {
-		return new String[]{"add"};
+	public List<ArgumentTemplate> getExpectedArguments() {
+		return Arrays.asList(new ArgumentTemplate(OptionType.INTEGER, "level", "The level to add", true),
+				new ArgumentTemplate(OptionType.ROLE, "role", "the role", true));
 	}
 	
 	@Override
-	public String getDescription() {
-		return "Adds a role";
-	}
-
-	@Override
-	public void execute(ReceivedCommand cmd) {
-//		if (args.length < 2) {//TODO
-//			cmd.reply("Error - missing args");
-//			return;
-//		}
+	public void action(CommandEvent event) {
+		if(event.getArgs().size()<2) {
+			event.reply("Error - missing args").queue();
+			return;
+		}
 		int level;
 		try {
-			level = cmd.getArgument("level").getAsInt();
+			level = (int)event.getArgs().get(0).getAsLong();
 		} catch (NumberFormatException e) {
-			cmd.reply("Error - level required");
+			event.reply("Error - level required").queue();
 			return;
 		}
 		Role role;
 		try {
-			role = cmd.getArgument("role").getAsRole();
+			role = event.getArgs().get(1).getAsRole();
 		} catch (NumberFormatException e) {
-			cmd.reply("Error - Role not found");
+			event.reply("Error - Role not found").queue();
 			return;
 		}
 		String roleId = role.getId();
 		database.executeInTransaction(()->{
-			GuildInformation info = database.loadGuildInformation(cmd.getGuild().getId());
+			GuildInformation info = database.loadGuildInformation(event.getGuild().getId());
 			info.setRoles(new HashSet<>(info.getRoles()));
 			for(Iterator<RoleInformation> roleIter=info.getRoles().iterator();
 					roleIter.hasNext();) {
@@ -72,13 +69,16 @@ public class AddCommand implements Command{
 			database.save(info,toAdd);
 		});
 		
-		cmd.reply("added Role " + role.getName() + " for level " + level);
+		event.reply("added Role " + role.getName() + " for level " + level).queue();
 	}
 
 	@Override
-	public List<Entry<String, OptionType>> getExpectedArguments() {
-		return Arrays.asList(new AbstractMap.SimpleEntry<>("level", OptionType.INTEGER),
-				new AbstractMap.SimpleEntry<>("role", OptionType.ROLE));
+	public String help() {
+		return "Adds a role";
 	}
-
+	
+	@Override
+	public boolean isAvailableToEveryone() {
+		return false;
+	}
 }

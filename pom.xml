@@ -14,6 +14,11 @@
 			<id>EclipseLink</id>
 			<url>http://download.eclipse.org/rt/eclipselink/maven.repo</url>
 		</repository>
+		<repository>
+			<id>dv8tion</id>
+			<name>m2-dv8tion</name>
+			<url>https://m2.dv8tion.net/releases</url>
+		</repository>
 	</repositories>
 	<licenses>
 		<license>
@@ -23,12 +28,14 @@
 	</licenses>
 	<dependencies>
 		<dependency>
-			<groupId>com.github.DV8FromTheWorld</groupId>
+			<groupId>net.dv8tion</groupId>
 			<artifactId>JDA</artifactId>
-			<version>feature~slash-commands-SNAPSHOT</version>
-			<!-- <groupId>net.dv8tion</groupId>
-			<artifactId>JDA</artifactId>
-			<version>4.2.0_227</version>-->
+			<version>4.2.1_273</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.jdiscordbots</groupId>
+			<artifactId>command-framework</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>

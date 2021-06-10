@@ -2,48 +2,44 @@ package io.github.jdiscordbots.mee.bypasser.cmd.commands;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import io.github.jdiscordbots.command_framework.command.ArgumentTemplate;
+import io.github.jdiscordbots.command_framework.command.Command;
+import io.github.jdiscordbots.command_framework.command.CommandEvent;
 import io.github.jdiscordbots.mee.bypasser.DataBaseController;
 import io.github.jdiscordbots.mee.bypasser.model.db.GuildInformation;
-import io.github.jdiscordbots.mee.bypasser.model.jda.wrappers.ReceivedCommand;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.Command.OptionType;
 
-public class ShowCommand implements Command {
+@Command({"show","list"})
+public class ShowCommand extends AbstractCommand {
 
 	private DataBaseController database;
 
-	public ShowCommand(DataBaseController database) {
-		this.database = database;
+	public ShowCommand() {
+		this.database = DataBaseController.getInstance();
 	}
 
 	@Override
-	public String[] getNames() {
-		return new String[] { "show", "list" };
-	}
-
-	@Override
-	public String getDescription() {
+	public String help() {
 		return "lists roles";
 	}
 	
 	@Override
-	public void execute(ReceivedCommand cmd) {
-		GuildInformation guildInfo = database.loadGuildInformation(cmd.getGuild().getId());
-		cmd.reply("" + guildInfo.getRoles().stream().map(roleInfo -> {
-			final Role role = cmd.getGuild().getRoleById(roleInfo.getRoleId());
+	public void action(CommandEvent event) {
+		GuildInformation guildInfo = database.loadGuildInformation(event.getGuild().getId());
+		event.reply("" + guildInfo.getRoles().stream().map(roleInfo -> {
+			final Role role = event.getGuild().getRoleById(roleInfo.getRoleId());
 			if (role != null) {
 				return "Level " + roleInfo.getLevel() + " is assigned to role " + role.getAsMention();
 			}
 			return "";
 		}).collect(Collectors.joining("\n")) + "\nRoles will " + ((guildInfo.isAutoRemoveLevels()) ? "" : "**not** ")
-				+ "be removed if someone reaches a higher role.");
+				+ "be removed if someone reaches a higher role.").queue();
 	}
 
 	@Override
-	public List<Entry<String, OptionType>> getExpectedArguments() {
+	public List<ArgumentTemplate> getExpectedArguments() {
 		return Collections.emptyList();
 	}
 

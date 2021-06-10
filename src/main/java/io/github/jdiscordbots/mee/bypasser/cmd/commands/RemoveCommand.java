@@ -1,56 +1,57 @@
 package io.github.jdiscordbots.mee.bypasser.cmd.commands;
 
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 
+import io.github.jdiscordbots.command_framework.command.ArgumentTemplate;
+import io.github.jdiscordbots.command_framework.command.Command;
+import io.github.jdiscordbots.command_framework.command.CommandEvent;
 import io.github.jdiscordbots.mee.bypasser.DataBaseController;
-import io.github.jdiscordbots.mee.bypasser.model.jda.wrappers.ReceivedCommand;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.Command.OptionType;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
-public class RemoveCommand implements Command {
+@Command("remove")
+public class RemoveCommand extends AbstractCommand {
 
 	private DataBaseController database;
 
-	public RemoveCommand(DataBaseController database) {
-		this.database = database;
+	public RemoveCommand() {
+		this.database = DataBaseController.getInstance();
 	}
 
-	@Override
-	public String[] getNames() {
-		return new String[]{"remove"};
-	}
 	
 	@Override
-	public String getDescription() {
+	public String help() {
 		return "removes a role";
 	}
 
 	@Override
-	public void execute(ReceivedCommand cmd) {
-		int level;
-		try {
-			level = cmd.getArgument("level").getAsInt();
-		} catch (NumberFormatException e) {
-			cmd.reply("Error - level required");
+	public void action(CommandEvent event) {
+		if(event.getArgs().isEmpty()) {
+			event.reply("Error - missing args").queue();
 			return;
 		}
-		String id = database.removeRole(cmd.getGuild().getId(), level);
+		int level;
+		try {
+			level = (int)event.getArgs().get(0).getAsLong();
+		} catch (NumberFormatException e) {
+			event.reply("Error - level required").queue();
+			return;
+		}
+		String id = database.removeRole(event.getGuild().getId(), level);
 
 		final Role role;
 
-		if (id != null && (role = cmd.getGuild().getRoleById(id)) != null) {
-			cmd.reply("removed id " + role.getAsMention() + " from level " + level);
+		if (id != null && (role = event.getGuild().getRoleById(id)) != null) {
+			event.reply("removed id " + role.getAsMention() + " from level " + level).queue();
 		} else {
-			cmd.reply("no id for level " + level);
+			event.reply("no id for level " + level).queue();
 		}
 	}
 
 	@Override
-	public List<Entry<String, OptionType>> getExpectedArguments() {
-		return Collections.singletonList(new AbstractMap.SimpleEntry<>("level", OptionType.INTEGER));
+	public List<ArgumentTemplate> getExpectedArguments() {
+		return Collections.singletonList(new ArgumentTemplate(OptionType.INTEGER, "level", "the level to remove the reward from", false));
 	}
-
+	
 }

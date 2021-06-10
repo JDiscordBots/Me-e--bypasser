@@ -1,60 +1,58 @@
 package io.github.jdiscordbots.mee.bypasser.cmd.commands;
 
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import io.github.jdiscordbots.mee.bypasser.model.jda.wrappers.ReceivedCommand;
-import io.github.jdiscordbots.mee.bypasser.model.jda.wrappers.text.ReceivedTextCommand;
+import io.github.jdiscordbots.command_framework.command.ArgumentTemplate;
+import io.github.jdiscordbots.command_framework.command.Command;
+import io.github.jdiscordbots.command_framework.command.CommandEvent;
+import io.github.jdiscordbots.command_framework.command.text.MessageCommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Command.OptionType;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
-public class IdCommand implements Command{
+@Command("id")
+public class IdCommand extends AbstractCommand{
 
-	@Override
-	public String[] getNames() {
-		return new String[]{"id"};
-	}
 
 	@Override
-	public String getDescription() {
+	public String help() {
 		return "gets the ID from a role name";
 	}
 	
 	@Override
-	public void execute(ReceivedCommand cmd) {
-//		if (args.length < 1) {
-//			event.getChannel().sendMessage("missing args").queue();
-//			return;
-//		}
+	public void action(CommandEvent event) {
+		if (event.getArgs().isEmpty()) {
+			event.reply("missing args").queue();
+			return;
+		}
 		
 		final String name;
-		if(cmd instanceof ReceivedTextCommand) {
-			name=startWithFirstSpace(((ReceivedTextCommand)cmd).getContentRaw().toString());
+		if(event instanceof MessageCommandEvent) {
+			name=startWithFirstSpace(((MessageCommandEvent)event).getEvent().getMessage().getContentRaw().toString());
 		}else {
-			name=cmd.getArgument("role").getAsString();
+			name=event.getArgs().get(0).getAsString();
 		}
 		final String title = "Roles of name `" + name + "`";
-		final String desc = cmd.getGuild().getRolesByName(name, true).stream()
+		final String desc = event.getGuild().getRolesByName(name, true).stream()
 				.map(role -> role.getAsMention() + " (" + role.getId() + ")").collect(Collectors.joining("\n"));
-		if (cmd.canUseEmbed()) {
+		if (event.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_EMBED_LINKS)) {
 			final EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle(title);
 			eb.setDescription(desc);
-
-			cmd.reply(eb.build());
+			event.reply(eb.build()).queue();
 		} else {
-			cmd.reply("**" + title + "**\n" + desc);
+			event.reply("**" + title + "**\n" + desc).queue();
 		}
 	}
 	private static String startWithFirstSpace(String txt) {
-		return txt.substring(txt.indexOf(' '));
+		return txt.substring(txt.indexOf(' ')+1);
 	}
 	
 	@Override
-	public List<Entry<String, OptionType>> getExpectedArguments() {
-		return Collections.singletonList(new AbstractMap.SimpleEntry<>("role", OptionType.STRING));
+	public List<ArgumentTemplate> getExpectedArguments() {
+		return Collections.singletonList(new ArgumentTemplate(OptionType.STRING, "role", "The role name to get the ID", true));
 	}
+	
 }

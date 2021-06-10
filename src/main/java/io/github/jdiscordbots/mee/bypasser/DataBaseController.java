@@ -6,24 +6,25 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.jdiscordbots.mee.bypasser.model.db.GuildInformation;
+import io.github.jdiscordbots.mee.bypasser.model.db.RoleInformation;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
-import net.dv8tion.jda.api.audit.ThreadLocalReason.Closable;
-import io.github.jdiscordbots.mee.bypasser.MsgListener.Holder;
-import io.github.jdiscordbots.mee.bypasser.model.db.GuildInformation;
-import io.github.jdiscordbots.mee.bypasser.model.db.RoleInformation;
 
 public class DataBaseController implements AutoCloseable {
+	
+	private static class InstanceHolder{
+		private static final DataBaseController INSTANCE=new DataBaseController();
+	}
 
 	private static final String LEGACY_ROLES_FILE_NAME = "roles.dat";
 	private static final Logger LOG = LoggerFactory.getLogger(DataBaseController.class);
@@ -36,8 +37,16 @@ public class DataBaseController implements AutoCloseable {
 
 	private TypedQuery<String> loadRoleStatement;
 
-	public DataBaseController() throws ClassNotFoundException, IOException {
-		load();
+	private DataBaseController() {
+		try {
+			load();
+		} catch (ClassNotFoundException | IOException e) {
+			throw new RuntimeException("Could not load role database",e);
+		}
+	}
+	
+	public static DataBaseController getInstance() {
+		return InstanceHolder.INSTANCE;
 	}
 
 	@SuppressWarnings("unchecked")
