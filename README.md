@@ -4,12 +4,14 @@ This Discord Bot bypasses a premium feature of the Bot Mee6, that you can use it
 
 You can select roles, that are given to users that reach a certain Mee6-Level.
 
-* In order to add roles, you can send a message `mb!add <Level number> <Role ID>`
-* In order to remove roles, you can send a message `mb!remove <Level number>`
-* In order to show all assigned roles, you can send a message `mb!show`
-* In order to get the id of a role, you can send a message `mb!id <Role name>`
-* In order to configure whether roles should be removed if someone reaches a higher role, you can send a message `mb!toggle`.
+* In order to add roles, you can send a message `/add <Level number> <Role ID>`
+* In order to remove roles, you can send a message `/remove <Level number>`
+* In order to show all assigned roles, you can send a message `/show`
+* In order to get the id of a role, you can send a message `/id <Role name>`
+* In order to configure whether roles should be removed if someone reaches a higher role, you can send a message `/toggle`.
 * Users get the roles when executing `!rank`
+
+Instead of using `/command` using Discord's slash command feature, users can also use `mb!command` .
 
 Do not include greater than/lower than signs (`<>`) in the commands.
 
@@ -40,6 +42,14 @@ This bot only allows one rank update per guild per minute in order to avoid API 
 * Import it in your IDE of choice as a maven project
 * Create a text file called `.token` in the root directory of the project and copy your bot token (from <https://discord.com/developers/applications/me>) in this file.
 * Run the class `io.github.jdiscordbots.mee.bypasser.MeeBypasser`
+
+## Privacy
+
+Me(e)-bypasser stores the following information:
+- IDs of roles that should be awarded (configurable with `/add` and `/remove`, viewable with `/show` and `/list`)
+- levels at which roles should be awarded (configurable with `/add` and `/remove`, viewable with `/show` and `/list`)
+- whether previous roles should be removed whenever a user reaches the next role (configurable with `/toggle`, viewable with `/show` and `/list`)
+- the last time when a rank update has been requested (required for rate limits)
 
 ## Public Instance
 

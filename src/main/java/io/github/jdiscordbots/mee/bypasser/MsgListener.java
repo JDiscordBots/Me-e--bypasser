@@ -63,7 +63,6 @@ public class MsgListener extends ListenerAdapter {
 					&& event.getGuild().getSelfMember().hasPermission(event.getChannel(), Permission.MESSAGE_HISTORY)) {
 				event.getChannel().retrieveMessageById(event.getMessageId()).queueAfter(1, TimeUnit.SECONDS,
 						msg -> runIfMemberFound(msg, member -> updateRole(member, event.getChannel(), null)));
-
 			}
 		} else if (event.getMessage().getContentRaw().startsWith("!rank")) { //check if message is rank query
 			final Member member;
