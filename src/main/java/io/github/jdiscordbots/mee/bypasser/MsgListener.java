@@ -3,8 +3,11 @@ package io.github.jdiscordbots.mee.bypasser;
 import io.github.jdiscordbots.mee.bypasser.model.db.GuildInformation;
 import io.github.jdiscordbots.mee.bypasser.ocr.MeeImageRecognition;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed.AuthorInfo;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.ShutdownEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -102,33 +105,6 @@ public class MsgListener extends ListenerAdapter {
 
 			}
 		}
-	}
-
-
-	private void runIfMemberFound(Message message, Consumer<Member> toRun) {
-		List<MessageEmbed> embeds = message.getEmbeds();
-		if(embeds.size() != 1) {
-			return;
-		}
-		MessageEmbed embed = embeds.get(0);
-		AuthorInfo author = embed.getAuthor();
-		if(author == null) {
-			return;
-		}
-		String iconUrl = author.getIconUrl();
-		if(iconUrl == null) {
-			return;
-		}
-		if(iconUrl.startsWith("https://cdn.discordapp.com/embed/avatars/")) {
-			runIfMemberByPrefixFound(message.getGuild(), author, toRun);
-			return;
-		}
-		String[] splittedURL = iconUrl.split("/");
-		if(splittedURL.length != 6) {
-			return;
-		}
-		message.getGuild().retrieveMemberById(splittedURL[4]).queue(toRun,
-				t -> runIfMemberByPrefixFound(message.getGuild(), author, toRun));
 	}
 
 	private void runIfMemberByPrefixFound(Guild g, AuthorInfo author, Consumer<Member> toRun) {
