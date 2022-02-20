@@ -164,13 +164,24 @@ public class MsgListener extends ListenerAdapter {
 				LOG.atError()
 						.addArgument(event::getGuild)
 						.setCause(e)
-						.log("An I/O error occurred trying to read the image in guild {}");
+						.log("An I/O error occurred trying to read the image in guild {}.");
 			} catch(TesseractException e) {
 				LOG.atInfo()
 						.addArgument(event::getGuild)
 						.setCause(e)
-						.log("An I/O error occurred trying to parse the image in guild {}");
+						.log("An error occurred trying to parse the image in guild {}.");
+			} catch(UnsatisfiedLinkError e) {
+				LOG.atError()
+						.addArgument(event::getGuild)
+						.setCause(e)
+						.log("An error occured trying to load libraries during parsing the image in guild {}.");
 			}
+		}).exceptionally(e -> {
+			LOG.atError()
+					.addArgument(event::getGuild)
+					.setCause(e)
+					.log("An unknown error occurred trying to load levels in guild {}.");
+			return null;
 		});
 
 	}
