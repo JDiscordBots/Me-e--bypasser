@@ -90,7 +90,7 @@ public class MsgListener extends ListenerAdapter {
 							if(id == null) {
 								id = rankPatternMatcher.group("id2");
 							}
-							event.getGuild().retrieveMemberById(id).queue(member -> updateRole(member, event, message.getMember()));
+							event.getGuild().retrieveMemberById(id).queue(member -> updateRole(member, event, message.getMember()), memberNotFound->{/*ignore*/});
 						}
 					}
 				});
