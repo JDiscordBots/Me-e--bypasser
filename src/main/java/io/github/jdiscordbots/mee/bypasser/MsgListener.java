@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -30,7 +32,7 @@ public class MsgListener extends ListenerAdapter {
 	private static final Pattern rankPattern = Pattern.compile("!rank (?:(?<id1>\\d+)|[<][@][!]?(?<id2>\\d+)[>])");
 
 	private DataBaseController database;
-
+	private ExecutorService imageProcessingPool=Executors.newSingleThreadExecutor();
 
 	public MsgListener() {
 		database = DataBaseController.getInstance();
@@ -134,7 +136,7 @@ public class MsgListener extends ListenerAdapter {
 		}
 		guildInfo.setLastRankCall(System.currentTimeMillis());
 		database.save(guildInfo);
-		attachment.retrieveInputStream().thenAccept(is -> {
+		attachment.retrieveInputStream().thenAcceptAsync(is -> {
 			try {
 				MeeImageRecognition.LevelInfo levelInfo = MeeImageRecognition.loadDataFromImage(is);
 				if(String.valueOf(levelInfo.getDiscrimminator()).equals(member.getUser().getDiscriminator())) {
@@ -176,7 +178,8 @@ public class MsgListener extends ListenerAdapter {
 						.setCause(e)
 						.log("An error occured trying to load libraries during parsing the image in guild {}.");
 			}
-		}).exceptionally(e -> {
+		},imageProcessingPool)
+		.exceptionally(e -> {
 			LOG.atError()
 					.addArgument(event::getGuild)
 					.setCause(e)
