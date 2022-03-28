@@ -11,15 +11,13 @@ You can select roles, that are given to users that reach a certain Mee6-Level.
 * In order to configure whether roles should be removed if someone reaches a higher role, you can send a message `/toggle`.
 * Users get the roles when executing `!rank`
 
-Instead of using `/command` using Discord's slash command feature, users can also use `mb!command` .
+Instead of using `/command` using Discord's slash command feature, users can also use `mb!command`.
 
 Do not include greater than/lower than signs (`<>`) in the commands.
 
-Note that this does only work if the leaderboard is public.
-
 ### Ratelimits
 
-This bot only allows one rank update per guild per minute in order to avoid API spam.
+This bot only allows one rank update per guild per second in order to prevent high resource consumption due to OCR.
 
 ## Build the bot
 
