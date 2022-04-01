@@ -9,9 +9,7 @@ You can select roles, that are given to users that reach a certain Mee6-Level.
 * In order to show all assigned roles, you can send a message `/show`
 * In order to get the id of a role, you can send a message `/id <Role name>`
 * In order to configure whether roles should be removed if someone reaches a higher role, you can send a message `/toggle`.
-* Users get the roles when executing `!rank`
-
-Instead of using `/command` using Discord's slash command feature, users can also use `mb!command`.
+* Users get the roles when executing `!rank` or `/rank`
 
 Do not include greater than/lower than signs (`<>`) in the commands.
 
