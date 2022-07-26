@@ -4,11 +4,11 @@ This Discord Bot bypasses a premium feature of the Bot Mee6, that you can use it
 
 You can select roles, that are given to users that reach a certain Mee6-Level.
 
-* In order to add roles, you can send a message `/add <Level number> <Role ID>`
-* In order to remove roles, you can send a message `/remove <Level number>`
-* In order to show all assigned roles, you can send a message `/show`
-* In order to get the id of a role, you can send a message `/id <Role name>`
-* In order to configure whether roles should be removed if someone reaches a higher role, you can send a message `/toggle`.
+* In order to add roles, you can execute the command `/add <Level number> <Role ID>`
+* In order to remove roles, you can run `/remove <Level number>`
+* In order to show all assigned roles, you can use `/show`
+* In order to get the id of a role, you can execute `/id <Role name>`
+* In order to configure whether roles should be removed if someone reaches a higher role, you do that with `/toggle`.
 * Users get the roles when executing `!rank` or `/rank`
 
 Do not include greater than/lower than signs (`<>`) in the commands.
