@@ -53,4 +53,4 @@ Click [here](https://discord.com/api/oauth2/authorize?client_id=6448307928450990
 
 We do not guarantee uptime or functionality of the bot and/or any instance of the bot in any way.
 
-Other bots offer that feature with their own leveling system for free, you can try those too.
+Other bots offer that feature with their own leveling system for free, you can try those too. For example, you can find alternatives to Mee6 [on alternativestomee6.com](https://www.alternativestomee6.com/premium-mee6-alternatives/leveling)
