@@ -76,15 +76,19 @@ public class MsgListener extends ListenerAdapter {
 			Message.Interaction interaction = event.getMessage().getInteraction();
 			if(interaction == null) {
 				event.getGuildChannel().getHistory().retrievePast(2).queue(messages -> {
+					System.out.println(messages.size() + "msg size");
 					if(messages.size() == 2) {
 						Message message = messages.get(1);
 						Matcher rankPatternMatcher = rankPattern.matcher(message.getContentRaw());
+						System.out.println(message.getContentRaw() + "raw msg");
 						if("!rank".equals(message.getContentRaw())) {
 							if(message.getMember() == null) {
+								System.out.println("getMember() = null");
 								event.getGuild().retrieveMemberById(message.getAuthor().getId()).queue(actualMember -> {
 									updateRole(actualMember, event, actualMember);
 								});
 							} else {
+								System.out.println("message.getMember()");
 								updateRole(message.getMember(), event, message.getMember());
 							}
 						} else if(rankPatternMatcher.matches()) {
