@@ -139,7 +139,7 @@ public class MsgListener extends ListenerAdapter {
 		attachment.retrieveInputStream().thenAcceptAsync(is -> {
 			try {
 				MeeImageRecognition.LevelInfo levelInfo = MeeImageRecognition.loadDataFromImage(is);
-				if(String.valueOf(levelInfo.getDiscrimminator()).equals(member.getUser().getDiscriminator())) {
+				if(checkDiscriminator(member, levelInfo)) {
 					guildInfo.getRoleIdsAtLevel(levelInfo.getLevel()).forEach((roleId, add) -> {
 						final Role role = member.getGuild().getRoleById(roleId);
 						if(role != null) {
@@ -187,6 +187,10 @@ public class MsgListener extends ListenerAdapter {
 			return null;
 		});
 
+	}
+
+	private boolean checkDiscriminator(Member member, MeeImageRecognition.LevelInfo levelInfo) {
+		return (levelInfo.getDiscrimminator()==-1 && "0000".equals(member.getUser().getDiscriminator())) || String.valueOf(levelInfo.getDiscrimminator()).equals(member.getUser().getDiscriminator());
 	}
 
 	@Override

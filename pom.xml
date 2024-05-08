@@ -51,17 +51,17 @@
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
-			<version>3.0.2</version>
+			<version>${eclipselink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>org.eclipse.persistence.jpa</artifactId>
-			<version>3.0.2</version>
+			<version>${eclipselink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>org.eclipse.persistence.extension</artifactId>
-			<version>3.0.2</version>
+			<version>${eclipselink.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -76,5 +76,6 @@
 	</dependencies>
 	<properties>
 		<main>io.github.jdiscordbots.mee.bypasser.MeeBypasser</main>
+		<eclipselink.version>4.0.2</eclipselink.version>
 	</properties>
 </project>
